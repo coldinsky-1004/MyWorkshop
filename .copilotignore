@@ -1,0 +1,10 @@
+# 환경 변수 및 시크릿 키 차단
+.env
+*.pem
+secrets/
+
+# 고객 개인정보 더미 데이터 차단
+data/customer_info.csv
+
+# 특정 확장자나 빌드 결과물 차단
+*.log
