@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 시스템</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --text: #1c2430;
+            --sub: #5b6b80;
+            --line: #d8e0eb;
+            --primary: #0f766e;
+            --primary-hover: #0b5f59;
+            --danger: #b42318;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+            background: radial-gradient(circle at top left, #e7f5f2 0%, var(--bg) 45%);
+            color: var(--text);
+        }
+
+        .wrap {
+            max-width: 980px;
+            margin: 40px auto;
+            padding: 0 16px 24px;
+        }
+
+        .header {
+            margin-bottom: 18px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: var(--sub);
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(33, 54, 82, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            font-size: 14px;
+        }
+
+        thead th {
+            background: #f1f6fc;
+            color: #30445f;
+            font-weight: 700;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .price {
+            font-weight: 700;
+        }
+
+        .qty-input {
+            width: 88px;
+            padding: 8px;
+            border: 1px solid #b8c7d9;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .empty {
+            padding: 24px;
+            text-align: center;
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 13px;
+                padding: 10px 8px;
+            }
+
+            .header h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="header">
+        <h1>상품 목록 및 주문</h1>
+        <p>수량 입력 후 주문하기를 누르면 Fetch API로 서버 API를 호출합니다.</p>
+    </div>
+
+    <div class="panel">
+        <table th:if="${!#lists.isEmpty(products)}">
+            <thead>
+            <tr>
+                <th>상품 ID</th>
+                <th>상품명</th>
+                <th>가격</th>
+                <th>수량</th>
+                <th>주문</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="product : ${products}">
+                <td th:text="${product.id}">1</td>
+                <td th:text="${product.name}">샘플 상품</td>
+                <td class="price" th:text="${#numbers.formatDecimal(product.price, 1, 'COMMA', 0, 'POINT')} + ' 원'">10,000 원</td>
+                <td>
+                    <input class="qty-input" type="number" min="1" value="1" th:id="'qty-' + ${product.id}">
+                </td>
+                <td>
+                    <button class="btn" th:attr="onclick=|placeOrder(${product.id})|">주문하기</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="empty" th:if="${#lists.isEmpty(products)}">
+            등록된 상품이 없습니다. 샘플 상품 데이터를 먼저 넣어주세요.
+        </div>
+    </div>
+</div>
+
+<script>
+    async function placeOrder(productId) {
+        const qtyInput = document.getElementById(`qty-${productId}`);
+        const quantity = Number(qtyInput.value);
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            alert('수량은 1 이상의 정수여야 합니다.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ productId, quantity })
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                alert(`주문 성공\n주문번호: ${payload.orderId}\n상품ID: ${payload.productId}\n수량: ${payload.quantity}`);
+                return;
+            }
+
+            const errorMessage = payload.message || '주문 실패';
+            alert(`주문 실패\n사유: ${errorMessage}`);
+        } catch (error) {
+            alert('네트워크 오류로 주문에 실패했습니다. 서버 상태를 확인해주세요.');
+        }
+    }
+</script>
+</body>
+</html>
