@@ -40,6 +40,7 @@ class OrderServiceImplTest {
     @InjectMocks
     private OrderServiceImpl orderService;
 
+    @SuppressWarnings("null")
     @Test
     @DisplayName("BVA - 재고가 요청 수량(1)과 같을 때 주문 성공 및 재고 차감")
     void placeOrder_success_whenStockIsOne() {
@@ -71,6 +72,7 @@ class OrderServiceImplTest {
         assertThat(orderCaptor.getValue().getQuantity()).isEqualTo(1);
     }
 
+    @SuppressWarnings("null")
     @Test
     @DisplayName("BVA - 재고가 하한(0)일 때 주문 실패 및 OutOfStockException 발생")
     void placeOrder_fail_whenStockIsZero() {

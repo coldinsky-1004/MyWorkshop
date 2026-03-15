@@ -34,6 +34,7 @@ public class SampleDataInitializer implements CommandLineRunner {
         Product mouse = new Product("무선 마우스", new BigDecimal("39000.00"));
         Product monitor = new Product("27인치 모니터", new BigDecimal("249000.00"));
 
+        @SuppressWarnings("null")
         List<Product> products = productRepository.saveAll(List.of(keyboard, mouse, monitor));
 
         stockRepository.save(new Stock(products.get(0), 10));
